@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "repository": "https://github.com/critesjosh/private_voting_codespace.git",
-  "author": "Josh Crites <jc@joshcrites.com>",
+  "author": "Rajesh <bhat.rajeshbhat@gmail.com>",
   "license": "MIT",
   "private": true,
   "type": "module",
