@@ -12,24 +12,31 @@
   },
   "dependencies": {
     "@aztec/aztec.js": "^0.51.0",
+    "node-stdlib-browser": "^1.2.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "vite-plugin-node-stdlib-browser": "^0.2.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.9.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1",
-    "eslint": "^9.9.0",
-    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
-    "eslint-plugin-react-refresh": "^0.4.9",
-    "globals": "^15.9.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "eslint": "^8.45.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
     "patch-package": "^8.0.0",
     "postinstall-postinstall": "^2.1.0",
-    "typescript": "^5.5.3",
-    "typescript-eslint": "^8.0.1",
-    "vite": "^5.4.1",
+    "rollup-plugin-node-polyfills": "^0.2.1",
+    "typescript": "~5.3.3",
+    "vite": "^4.4.5",
     "vite-plugin-node-polyfills": "^0.22.0",
-    "vite-plugin-resolve": "^2.5.2"
+    "vite-plugin-resolve": "^2.4.2"
+  },
+  "browser": {
+    "fs": false,
+    "os": false,
+    "path": false
   }
 }

@@ -1,18 +1,23 @@
-import React, { useEffect } from 'react';
-import VotingForm from './components/VotingForm';
-import VoteResults from './components/VoteResults';
-import { initializeContract } from './utils/contractInteraction';
+import React from 'react';
+import AztecIntegration from './utils/AztecIntegration';
+import { createSchnorrAccount } from './aztec'; // Import the function to create Schnorr account
 
 const App: React.FC = () => {
-  useEffect(() => {
-    initializeContract().catch(console.error);
-  }, []);
+
+  const handleCreateAccount = async () => {
+    try {
+      const account = await createSchnorrAccount();
+      console.log('Account created:', account);
+    } catch (error) {
+      console.error('Error creating account:', error);
+    }
+  };
 
   return (
-    <div>
-      <h1>Easy Private Voting</h1>
-      <VotingForm />
-      <VoteResults />
+    <div className="App">
+      <h1>Welcome to Aztec Wallet</h1>
+      <button onClick={handleCreateAccount}>Create Account</button>
+      <AztecIntegration />
     </div>
   );
 };

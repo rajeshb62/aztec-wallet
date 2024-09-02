@@ -1,28 +1,49 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
+import eslint from '@eslint/js';
+import tseslint from '@typescript-eslint/eslint-plugin';
+import tseslintParser from '@typescript-eslint/parser';
 
-export default tseslint.config(
-  { ignores: ['dist'] },
+export default [
+  eslint.configs.recommended,
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ['**/*.{ts,tsx}'],
+    files: ['**/*.ts', '**/*.tsx'],
+    ignores: ['eslint.config.js'],
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      parser: tseslintParser,
+      parserOptions: {
+        project: './tsconfig.json',
+      },
+      globals: {
+        console: 'readonly',
+        document: 'readonly',
+        process: 'readonly',
+      },
     },
     plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
+      '@typescript-eslint': tseslint,
     },
     rules: {
-      ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+      'no-undef': 'off',
+      '@typescript-eslint/ban-ts-comment': ['error', {
+        'ts-expect-error': 'allow-with-description',
+        'ts-ignore': false,
+      }],
+      '@typescript-eslint/no-unused-vars': ['error', { 
+        'varsIgnorePattern': 'react|nodePolyfills|nodeStdlibBrowser|resolve|aztecVersion',
+        'argsIgnorePattern': '^_'
+      }],
+      ...tseslint.configs.recommended.rules,
     },
   },
-)
+  {
+    files: ['**/*.js', 'vite.config.ts'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+    },
+    rules: {
+      'no-undef': 'off',
+    },
+  },
+];

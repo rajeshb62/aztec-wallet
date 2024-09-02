@@ -1,27 +1,33 @@
-// import { defineConfig } from 'vite'
-// import react from '@vitejs/plugin-react'
-
-// // https://vitejs.dev/config/
-// export default defineConfig({
-//   plugins: [react()],
-// })
-
-import { defineConfig } from "vite";
-import { nodePolyfills } from "vite-plugin-node-polyfills";
-import resolve from "vite-plugin-resolve";
-import react from '@vitejs/plugin-react'  // Add this line
+import { defineConfig } from 'vite';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import resolve from 'vite-plugin-resolve';
+import path from 'path';
 
 const aztecVersion = "0.51.0";
 
+// Helper function to resolve paths relative to the project root
+const rootResolve = (...segments) => path.resolve(__dirname, '..', ...segments);
+
 export default defineConfig({
+    root: __dirname,
+    resolve: {
+        alias: {
+            'fs/promises': rootResolve('node_modules/node-stdlib-browser/mock/empty'),
+            'fs': rootResolve('node_modules/node-stdlib-browser/mock/empty'),
+            'path': rootResolve('node_modules/node-stdlib-browser/mock/empty'),
+        },
+    },
     plugins: [
-        react(),  // Add this line
         process.env.NODE_ENV === "production"
-            ? resolve({
-                  "@aztec/bb.js": `export * from "https://unpkg.com/@aztec/bb.js@${aztecVersion}/dest/browser/index.js"`,
-              })
+            ? /** @type {any} */ (
+                resolve({
+                    "@aztec/bb.js": `export * from "https://unpkg.com/@aztec/bb.js@${aztecVersion}/dest/browser/index.js"`,
+                })
+            )
             : undefined,
-        nodePolyfills(),
+        nodePolyfills({
+            include: [rootResolve('node_modules/**/*.js')],
+        }),
     ],
     build: {
         target: "esnext",

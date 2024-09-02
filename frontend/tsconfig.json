@@ -1,5 +1,14 @@
 {
-  "files": [],
+  "compilerOptions": {
+    // ... your compiler options
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "vite.config.ts",
+    "eslint.config.js",
+    "src/global.d.ts"
+  ],
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
