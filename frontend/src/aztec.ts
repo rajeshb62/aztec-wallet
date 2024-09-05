@@ -12,9 +12,10 @@ export async function createSchnorrAccount(): Promise<{ address: string }> {
     
     // Create a new account
     const account = await getSchnorrAccount(pxe, encryptionSecretKey, signingSecretKey);
-    console.log(account.getWallet());
+    const wallet = await account.getWallet();
+    console.log(wallet);
 
-    return { address: (await account.getWallet()).getAddress().toString() };
+    return { address: (wallet).getAddress().toString() };
   } catch (error) {
     console.error('Error creating account:', error);
     throw new Error('Failed to create account');

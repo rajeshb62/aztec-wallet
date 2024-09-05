@@ -17,7 +17,6 @@
     "test": "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json",
     "update": "aztec update --contract . && ./.github/scripts/update_contract.sh $(grep -oP 'tag\\s*=\\s*\"\\K[^\"]+' \"Nargo.toml\" | head -1)",
     "postinstall": "patch-package"
-    // yarn workspace frontend dev (for yarn dev)
   },
   "dependencies": {
     "@aztec/aztec.js": "0.51.0"
