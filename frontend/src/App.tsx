@@ -5,12 +5,20 @@ import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 const App: React.FC = () => {
     const [status, setStatus] = useState<string>('');
     const [showDeployAccount, setShowDeployAccount] = useState(false);
+    const [walletInfo, setWalletInfo] = useState<{
+        address: string;
+        privateKey: string;
+        transactionSigningKey: string;
+    } | null>(null);
 
     const handleCreateAccount = async () => {
         setStatus('Deploying account...');
         setShowDeployAccount(true);
 
         try {
+            // Simulate a delay to allow the "Deploying account..." status to be visible
+            await new Promise(resolve => setTimeout(resolve, 100));
+
             const PXE_URL = 'http://localhost:8080';
             const pxe = createPXEClient(PXE_URL);
             const secretKey = Fr.random();
@@ -26,7 +34,12 @@ const App: React.FC = () => {
             const address = wallet.getAddress();
             
             console.log(`Account created with address: ${address.toString()}`);
-            setStatus(`Account created with address: ${address.toString()}`);
+            setStatus(`Account created successfully!`);
+            setWalletInfo({
+                address: address.toString(),
+                privateKey: secretKey.toString(),
+                transactionSigningKey: signingPrivateKey.toString(),
+            });
         } catch (err) {
             console.error(`Error in deployment script:`, err);
             setStatus('Deployment failed. Check console for details.');
@@ -51,8 +64,20 @@ const App: React.FC = () => {
                 </>
             ) : (
                 <div>
-                    <h2>Deploying Account</h2>
+                    <h2>Account Creation</h2>
                     <p>{status}</p>
+                    {walletInfo && (
+                        <div style={{ textAlign: 'left', marginTop: '20px' }}>
+                            <h3>Account Information</h3>
+                            <p><strong>Address:</strong> {walletInfo.address}</p>
+                            <p><strong>Private Key:</strong> {walletInfo.privateKey}</p>
+                            <p><strong>Transaction Signing Key:</strong> {walletInfo.transactionSigningKey}</p>
+                            <p style={{ color: 'red' }}>
+                                Please save your Private Key and Transaction Signing Key securely. 
+                                They will not be shown again!
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

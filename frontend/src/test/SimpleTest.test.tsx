@@ -6,8 +6,16 @@ import App from '../App';
 // Mock the Aztec.js functions
 jest.mock('@aztec/aztec.js', () => ({
   createPXEClient: jest.fn(),
-  Fr: { random: jest.fn() },
-  GrumpkinScalar: { random: jest.fn() },
+  Fr: { 
+    random: jest.fn().mockReturnValue({
+      toString: () => 'mocked-private-key'
+    })
+  },
+  GrumpkinScalar: { 
+    random: jest.fn().mockReturnValue({
+      toString: () => 'mocked-signing-key'
+    })
+  },
 }));
 
 jest.mock('@aztec/accounts/schnorr', () => ({
@@ -35,11 +43,11 @@ describe('App Component', () => {
     fireEvent.click(createAccountButton);
     
     await waitFor(() => {
-      expect(screen.getByText('Deploying Account')).toBeInTheDocument();
+      expect(screen.getByText('Deploying account...')).toBeInTheDocument();
     });
 
     await waitFor(() => {
-      expect(screen.getByText(/Account created with address: mocked-address/)).toBeInTheDocument();
+      expect(screen.getByText('Account created successfully!')).toBeInTheDocument();
     });
   });
 
@@ -50,5 +58,22 @@ describe('App Component', () => {
     fireEvent.click(signInText);
     expect(consoleSpy).toHaveBeenCalledWith('Sign In clicked');
     consoleSpy.mockRestore();
+  });
+
+  test('clicking Create an Account button displays account information', async () => {
+    render(<App />);
+    const createAccountButton = screen.getByText('Create an Account');
+    
+    fireEvent.click(createAccountButton);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Account Creation')).toBeInTheDocument();
+      expect(screen.getByText(/Address:/)).toBeInTheDocument();
+      expect(screen.getByText(/Private Key:/)).toBeInTheDocument();
+      expect(screen.getByText(/Transaction Signing Key:/)).toBeInTheDocument();
+      expect(screen.getByText('mocked-address')).toBeInTheDocument();
+      expect(screen.getByText('mocked-private-key')).toBeInTheDocument();
+      expect(screen.getByText('mocked-signing-key')).toBeInTheDocument();
+    });
   });
 });
