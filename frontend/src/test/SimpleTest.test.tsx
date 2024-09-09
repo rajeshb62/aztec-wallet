@@ -1,29 +1,54 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import App from '../App';
 
-// Mock the entire App component
-jest.mock('../App', () => ({
-  __esModule: true,
-  default: () => (
-    <div>
-      <button>Deploy Account</button>
-      <div data-testid="mocked-aztec-integration">Mocked AztecIntegration</div>
-    </div>
-  ),
+// Mock the Aztec.js functions
+jest.mock('@aztec/aztec.js', () => ({
+  createPXEClient: jest.fn(),
+  Fr: { random: jest.fn() },
+  GrumpkinScalar: { random: jest.fn() },
 }));
 
-// Import the mocked component
-import DeployAccount from '../App';
+jest.mock('@aztec/accounts/schnorr', () => ({
+  getSchnorrAccount: jest.fn().mockReturnValue({
+    getWallet: jest.fn().mockResolvedValue({
+      getAddress: jest.fn().mockReturnValue({
+        toString: jest.fn().mockReturnValue('mocked-address'),
+      }),
+    }),
+  }),
+}));
 
-test('renders Deploy Account button', () => {
-  render(<DeployAccount />);
-  const buttonElement = screen.getByText('Deploy Account');
-  expect(buttonElement).toBeInTheDocument();
-});
+describe('App Component', () => {
+  test('renders initial layout correctly', () => {
+    render(<App />);
+    expect(screen.getByText('Welcome to Aztec Wallet')).toBeInTheDocument();
+    expect(screen.getByText('Create an Account')).toBeInTheDocument();
+    expect(screen.getByText('Sign in if you already have an account')).toBeInTheDocument();
+  });
 
-test('renders mocked AztecIntegration component', () => {
-  render(<DeployAccount />);
-  const mockedComponent = screen.getByTestId('mocked-aztec-integration');
-  expect(mockedComponent).toBeInTheDocument();
+  test('clicking Create an Account button starts deployment process', async () => {
+    render(<App />);
+    const createAccountButton = screen.getByText('Create an Account');
+    
+    fireEvent.click(createAccountButton);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Deploying Account')).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Account created with address: mocked-address/)).toBeInTheDocument();
+    });
+  });
+
+  test('clicking Sign in text logs to console', () => {
+    const consoleSpy = jest.spyOn(console, 'log');
+    render(<App />);
+    const signInText = screen.getByText('Sign in if you already have an account');
+    fireEvent.click(signInText);
+    expect(consoleSpy).toHaveBeenCalledWith('Sign In clicked');
+    consoleSpy.mockRestore();
+  });
 });

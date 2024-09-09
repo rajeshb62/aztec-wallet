@@ -6,7 +6,7 @@ import path from 'path';
 const aztecVersion = "0.51.0";
 
 // Helper function to resolve paths relative to the project root
-const rootResolve = (...segments) => path.resolve(__dirname, '..', ...segments);
+const rootResolve = (...segments: string[]) => path.resolve(__dirname, '..', ...segments);
 
 export default defineConfig({
     root: __dirname,
@@ -26,7 +26,7 @@ export default defineConfig({
             )
             : undefined,
         nodePolyfills({
-            include: [rootResolve('node_modules/**/*.js')],
+            include: ['buffer', 'crypto', 'stream', 'util'],
         }),
     ],
     build: {
