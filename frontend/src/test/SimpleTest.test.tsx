@@ -76,4 +76,25 @@ describe('App Component', () => {
       expect(screen.getByText('mocked-signing-key')).toBeInTheDocument();
     });
   });
+
+  test('clicking Done button shows wallet view with address', async () => {
+    render(<App />);
+    const createAccountButton = screen.getByText('Create an Account');
+    
+    fireEvent.click(createAccountButton);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Account Creation')).toBeInTheDocument();
+    });
+
+    const doneButton = await screen.findByText('Done');
+    fireEvent.click(doneButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Wallet Home')).toBeInTheDocument();
+      const addressElement = screen.getByText(/Address:/);
+      expect(addressElement).toBeInTheDocument();
+      expect(screen.getByText('mocked-address')).toBeInTheDocument();
+    });
+  });
 });

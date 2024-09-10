@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { createPXEClient, Fr, GrumpkinScalar, AccountWallet } from '@aztec/aztec.js';
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
+import './App.css';
 
 const App: React.FC = () => {
     const [status, setStatus] = useState<string>('');
     const [showDeployAccount, setShowDeployAccount] = useState(false);
+    const [showWalletView, setShowWalletView] = useState(false);
     const [walletInfo, setWalletInfo] = useState<{
         address: string;
         privateKey: string;
@@ -16,7 +18,6 @@ const App: React.FC = () => {
         setShowDeployAccount(true);
 
         try {
-            // Simulate a delay to allow the "Deploying account..." status to be visible
             await new Promise(resolve => setTimeout(resolve, 100));
 
             const PXE_URL = 'http://localhost:8080';
@@ -24,13 +25,8 @@ const App: React.FC = () => {
             const secretKey = Fr.random();
             const signingPrivateKey = GrumpkinScalar.random();
             
-            // Create the account without waiting for setup
             const account = getSchnorrAccount(pxe, secretKey, signingPrivateKey);
-            
-            // Get the wallet
             const wallet: AccountWallet = await account.getWallet();
-            
-            // Get the address
             const address = wallet.getAddress();
             
             console.log(`Account created with address: ${address.toString()}`);
@@ -50,32 +46,51 @@ const App: React.FC = () => {
         console.log('Sign In clicked');
     };
 
+    const handleDone = () => {
+        setShowWalletView(true);
+    };
+
+    if (showWalletView && walletInfo) {
+        return (
+            <div className="wallet-view">
+                <div className="address-bar">
+                    <strong>Address:</strong> {walletInfo.address}
+                </div>
+                <h1>Wallet Home</h1>
+                {/* Add more wallet functionality here */}
+            </div>
+        );
+    }
+
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
+        <div className="app-container">
             <h1>Welcome to Aztec Wallet</h1>
             {!showDeployAccount ? (
                 <>
-                    <button onClick={handleCreateAccount} style={{ margin: '10px', padding: '10px 20px' }}>
+                    <button onClick={handleCreateAccount} className="create-account-button">
                         Create an Account
                     </button>
-                    <p onClick={handleSignIn} style={{ cursor: 'pointer', textDecoration: 'underline' }}>
+                    <p onClick={handleSignIn} className="sign-in-text">
                         Sign in if you already have an account
                     </p>
                 </>
             ) : (
-                <div>
+                <div className="account-creation">
                     <h2>Account Creation</h2>
                     <p>{status}</p>
                     {walletInfo && (
-                        <div style={{ textAlign: 'left', marginTop: '20px' }}>
+                        <div className="account-info">
                             <h3>Account Information</h3>
                             <p><strong>Address:</strong> {walletInfo.address}</p>
                             <p><strong>Private Key:</strong> {walletInfo.privateKey}</p>
                             <p><strong>Transaction Signing Key:</strong> {walletInfo.transactionSigningKey}</p>
-                            <p style={{ color: 'red' }}>
+                            <p className="warning-text">
                                 Please save your Private Key and Transaction Signing Key securely. 
                                 They will not be shown again!
                             </p>
+                            <button onClick={handleDone} className="done-button">
+                                Done
+                            </button>
                         </div>
                     )}
                 </div>
