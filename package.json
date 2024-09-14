@@ -20,10 +20,10 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
-    "@aztec/aztec.js": "0.51.0"
+    "@aztec/aztec.js": "0.55.0"
   },
   "devDependencies": {
-    "@aztec/accounts": "0.51.0",
+    "@aztec/accounts": "0.55.0",
     "@babel/preset-env": "^7.25.4",
     "@babel/preset-react": "^7.24.7",
     "@testing-library/jest-dom": "^5.16.5",
