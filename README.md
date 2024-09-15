@@ -1,7 +1,7 @@
 # Aztec Wallet
 
 ## Overview
-Aztec Wallet is a blockchain wallet application built using React and the Aztec Protocol. It provides a user-friendly interface for creating and managing Aztec accounts, enabling private transactions on the Ethereum network.
+This is a wallet prototype for the Aztec Protocol. It provides a user-friendly interface for creating and managing Aztec accounts, enabling private transactions on the Ethereum network. At present basic features are enabled, namely, creation of an account and reading token balance.
 
 ## Features
 - Create new Aztec accounts
@@ -55,6 +55,12 @@ To create a production build:
 cd frontend
 yarn build
 ```
+## Features yet to be built
+This is the beginning. Key features of the wallet will be built going forward:
+- Good UI
+- Transfer of tokens, connecting, signing and sending transaction from an account
+- Account abstraction features like conditional approvals (auto approval of transactions below user configured value), session level approvals
+- Easy fee features like being able to pay using a stablecoin like USDC
 
 ## Project Structure
 - `/frontend`: Contains the React frontend application
