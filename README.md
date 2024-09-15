@@ -1,91 +1,79 @@
-# Aztec Starter
+# Aztec Wallet
 
-This repo is meant to be a starting point for writing Aztec contracts and tests.
+## Overview
+Aztec Wallet is a blockchain wallet application built using React and the Aztec Protocol. It provides a user-friendly interface for creating and managing Aztec accounts, enabling private transactions on the Ethereum network.
 
-You can find the Easy Private Voting contract in `./src/main.nr`. A simple integration test is in `./src/test/index.test.ts`.
+## Features
+- Create new Aztec accounts
+- View account details (address, private key, transaction signing key)
+- Secure wallet functionality
+- Integration with Aztec Protocol for privacy-preserving transactions
 
-The corresponding tutorial can be found in the [Aztec docs here](https://docs.aztec.network/tutorials/codealong/contract_tutorials/private_voting_contract).
+## Prerequisites
+- Node.js (v14 or later)
+- Yarn package manager
 
-## Getting Started
+## Installation
+1. Clone the repository:
+   ```
+   git clone https://github.com/rajeshb62/aztec-wallet.git
+   cd aztec-wallet
+   ```
 
-Use node version 18.
+2. Install dependencies:
+   ```
+   yarn install
+   ```
 
-[Start your codespace from the codespace dropdown](https://docs.github.com/en/codespaces/getting-started/quickstart).
+3. Install frontend dependencies:
+   ```
+   cd frontend
+   yarn install
+   ```
 
-Get the sandbox, aztec-cli and other tooling with this command:
+## Running the Application
+1. Start the development server:
+   ```
+   cd frontend
+   yarn dev
+   ```
 
-```bash
-bash -i <(curl -s install.aztec.network)
+2. Open your browser and navigate to `http://localhost:5173` (or the port specified by Vite).
+
+## Running Tests
+To run the test suite:
 ```
-
-Modify the toolkit version to match the version (`x.x.x`) specified in Nargo.toml with:
-
-```
-aztec-up x.x.x
-```
-
-or update to the latest version with:
-
-```bash
-aztec-up
-```
-
-Start the sandbox with:
-
-```bash
-aztec start --sandbox
-```
-
-## Install packages
-
-```bash
-yarn install
-```
-
-## Compile
-
-```bash
-aztec-nargo compile
-```
-
-or
-
-```bash
-yarn compile
-```
-
-## Codegen
-
-Generate the contract artifact json and typescript interface
-
-```bash
-yarn codegen
-```
-
-## Test
-
-```bash
 yarn test
 ```
-
-## Error resolution
-
-### Update Nodejs and Noir dependencies
-
-```bash
-yarn update
+For frontend-specific tests:
+```
+yarn test:frontend
+```
+## Building for Production
+To create a production build:
+```
+cd frontend
+yarn build
 ```
 
-### Update Contract
+## Project Structure
+- `/frontend`: Contains the React frontend application
+- `/src`: Contains the main source code
+- `/test`: Contains test files
 
-Get the contract code from the monorepo. The script will look at the versions defined in `./Nargo.toml` and fetch that version of the code from the monorepo.
+## Technologies Used
+- React
+- TypeScript
+- Vite
+- Aztec Protocol (@aztec/aztec.js)
+- Jest for testing
 
-```bash
-yarn update
-```
+## Contributing
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-You may need to update permissions with:
+## License
+This project is licensed under the MIT License.
 
-```bash
-chmod +x update_contract.sh
-```
+## Acknowledgements
+- Aztec Protocol team for their excellent documentation and tools
+- React and Vite communities for their robust frameworks
