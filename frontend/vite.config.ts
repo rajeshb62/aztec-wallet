@@ -3,7 +3,7 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import resolve from 'vite-plugin-resolve';
 import path from 'path';
 
-const aztecVersion = "0.51.0";
+const aztecVersion = "0.55.0";
 
 // Helper function to resolve paths relative to the project root
 const rootResolve = (...segments: string[]) => path.resolve(__dirname, '..', ...segments);
