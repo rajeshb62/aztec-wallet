@@ -32,7 +32,7 @@ This is a wallet prototype for the Aztec Protocol. It provides a user-friendly i
    ```
 
 ## Running the Application
-1. Start the development server:
+1. Start the development server (run the sandbox before running below commands):
    ```
    cd frontend
    yarn dev
