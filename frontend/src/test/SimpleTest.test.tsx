@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import App from '../App';
+import { MemoryRouter } from 'react-router-dom';
+import { WalletProvider, WalletInfo } from '../context/WalletContext';
+import Home from '../pages/Home';
+import Wallet from '../pages/Wallet';
+import CreateAccount from '../pages/CreateAccount'; // Adjust the path as needed
+import { act } from 'react-dom/test-utils';
 
 // Mock the Aztec.js functions
 jest.mock('@aztec/aztec.js', () => ({
@@ -28,73 +33,88 @@ jest.mock('@aztec/accounts/schnorr', () => ({
   }),
 }));
 
-describe('App Component', () => {
-  test('renders initial layout correctly', () => {
-    render(<App />);
+const renderWithRouter = (ui: ReactElement, { route = '/' } = {}) => {
+  window.history.pushState({}, 'Test page', route);
+  return render(
+    <MemoryRouter initialEntries={[route]}>
+      {ui}
+    </MemoryRouter>
+  );
+};
+
+describe('Aztec Wallet App', () => {
+  test('renders home page with create account and sign in options', () => {
+    renderWithRouter(<WalletProvider><Home /></WalletProvider>);
     expect(screen.getByText('Welcome to Aztec Wallet')).toBeInTheDocument();
     expect(screen.getByText('Create an Account')).toBeInTheDocument();
     expect(screen.getByText('Sign in if you already have an account')).toBeInTheDocument();
   });
 
-  test('clicking Create an Account button starts deployment process', async () => {
-    render(<App />);
-    const createAccountButton = screen.getByText('Create an Account');
-    
-    fireEvent.click(createAccountButton);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Deploying account...')).toBeInTheDocument();
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText('Account created successfully!')).toBeInTheDocument();
-    });
-  });
-
-  test('clicking Sign in text logs to console', () => {
+  test('clicking sign in logs to console', () => {
     const consoleSpy = jest.spyOn(console, 'log');
-    render(<App />);
-    const signInText = screen.getByText('Sign in if you already have an account');
-    fireEvent.click(signInText);
-    expect(consoleSpy).toHaveBeenCalledWith('Sign In clicked');
+    renderWithRouter(<WalletProvider><Home /></WalletProvider>);
+    fireEvent.click(screen.getByText('Sign in if you already have an account'));
+    expect(consoleSpy).toHaveBeenCalledWith('Sign in if you already have an account');
     consoleSpy.mockRestore();
   });
 
-  test('clicking Create an Account button displays account information', async () => {
-    render(<App />);
-    const createAccountButton = screen.getByText('Create an Account');
+  test('create account process', async () => {
+    await act(async () => {
+      renderWithRouter(<WalletProvider><CreateAccount /></WalletProvider>);
+    });
     
-    fireEvent.click(createAccountButton);
+    expect(screen.getByTestId('creating-account')).toBeInTheDocument();
     
     await waitFor(() => {
-      expect(screen.getByText('Account Creation')).toBeInTheDocument();
-      expect(screen.getByText(/Address:/)).toBeInTheDocument();
-      expect(screen.getByText(/Private Key:/)).toBeInTheDocument();
-      expect(screen.getByText(/Transaction Signing Key:/)).toBeInTheDocument();
-      expect(screen.getByText('mocked-address')).toBeInTheDocument();
-      expect(screen.getByText('mocked-private-key')).toBeInTheDocument();
-      expect(screen.getByText('mocked-signing-key')).toBeInTheDocument();
-    });
+      expect(screen.getByTestId('account-created')).toBeInTheDocument();
+    }, { timeout: 3000 });
   });
 
-  test('clicking Done button shows wallet view with address', async () => {
-    render(<App />);
-    const createAccountButton = screen.getByText('Create an Account');
-    
-    fireEvent.click(createAccountButton);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Account Creation')).toBeInTheDocument();
-    });
+  test('wallet view displays correct information', () => {
+    const mockWalletInfo: WalletInfo = {
+      address: '0x1234567890123456789012345678901234567890',
+      balance: '100',
+      transactions: [],
+      privateKey: 'mock-private-key',
+      transactionSigningKey: 'mock-transaction-signing-key'
+    };
 
-    const doneButton = await screen.findByText('Done');
-    fireEvent.click(doneButton);
+    render(
+      <MemoryRouter>
+        <WalletProvider initialWalletInfo={mockWalletInfo}>
+          <Wallet />
+        </WalletProvider>
+      </MemoryRouter>
+    );
 
-    await waitFor(() => {
-      expect(screen.getByText('Wallet Home')).toBeInTheDocument();
-      const addressElement = screen.getByText(/Address:/);
-      expect(addressElement).toBeInTheDocument();
-      expect(screen.getByText('mocked-address')).toBeInTheDocument();
-    });
+    expect(screen.getByText('Wallet')).toBeInTheDocument();
+    expect(screen.getByText(/Address:/)).toBeInTheDocument();
+    expect(screen.getByText(/Private Key:/)).toBeInTheDocument();
+    expect(screen.getByText(/Transaction Signing Key:/)).toBeInTheDocument();
+  });
+
+  test('wallet home view displays only address', () => {
+    const mockWalletInfo: WalletInfo = {
+      address: '0x1234567890123456789012345678901234567890',
+      balance: '100',
+      transactions: [],
+      privateKey: 'mock-private-key',
+      transactionSigningKey: 'mock-transaction-signing-key'
+    };
+
+    render(
+      <MemoryRouter>
+        <WalletProvider initialWalletInfo={mockWalletInfo}>
+          <Wallet />
+        </WalletProvider>
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByText('Done'));
+
+    expect(screen.getByText('Wallet Home')).toBeInTheDocument();
+    expect(screen.getByText(/Address:/)).toBeInTheDocument();
+    expect(screen.queryByText(/Private Key:/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Transaction Signing Key:/)).not.toBeInTheDocument();
   });
 });
