@@ -41,7 +41,7 @@ This is a wallet prototype for the Aztec Protocol. It provides a user-friendly i
 2. Open your browser and navigate to `http://localhost:5173` (or the port specified by Vite).
 
 ## Running Tests
-Run tests from project root. To run the test suite:
+Run tests from project root (run aztec sandbox first). To run the test suite:
 ```
 yarn test
 ```
