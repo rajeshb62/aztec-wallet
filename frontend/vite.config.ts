@@ -17,5 +17,8 @@ export default defineConfig({
             }
         }
     ],
+    css: {
+        postcss: './postcss.config.js',
+    },
     // ... rest of your config
 });
