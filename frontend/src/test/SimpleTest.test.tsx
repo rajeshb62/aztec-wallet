@@ -47,14 +47,14 @@ describe('Aztec Wallet App', () => {
     renderWithRouter(<WalletProvider><Home /></WalletProvider>);
     expect(screen.getByText('Welcome to Aztec Wallet')).toBeInTheDocument();
     expect(screen.getByText('Create an Account')).toBeInTheDocument();
-    expect(screen.getByText('Sign in if you already have an account')).toBeInTheDocument();
+    expect(screen.getByText('Already have an account? Sign in')).toBeInTheDocument();
   });
 
   test('clicking sign in logs to console', () => {
     const consoleSpy = jest.spyOn(console, 'log');
     renderWithRouter(<WalletProvider><Home /></WalletProvider>);
-    fireEvent.click(screen.getByText('Sign in if you already have an account'));
-    expect(consoleSpy).toHaveBeenCalledWith('Sign in if you already have an account');
+    fireEvent.click(screen.getByText('Already have an account? Sign in'));
+    expect(consoleSpy).toHaveBeenCalledWith('Already have an account? Sign in');
     consoleSpy.mockRestore();
   });
 
