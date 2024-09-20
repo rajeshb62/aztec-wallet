@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../context/WalletContext';
 
-// Mock function for getSchnorrAccount
 const getSchnorrAccount = async () => {
   await new Promise(resolve => setTimeout(resolve, 2000));
   return {
@@ -15,23 +14,21 @@ const getSchnorrAccount = async () => {
 const CreateAccount: React.FC = () => {
   const [isCreating, setIsCreating] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [newAccount, setNewAccount] = useState<any>(null);
   const { setWalletInfo } = useWallet();
   const navigate = useNavigate();
 
   useEffect(() => {
     const createAccount = async () => {
       try {
-        const newAccount = await getSchnorrAccount();
-        const newWalletInfo = {
-          address: newAccount.address,
-          privateKey: newAccount.privateKey,
-          transactionSigningKey: newAccount.transactionSigningKey,
+        const account = await getSchnorrAccount();
+        setNewAccount(account);
+        setWalletInfo({
+          ...account,
           balance: '0',
           transactions: [],
-        };
-        setWalletInfo(newWalletInfo);
+        });
         setIsCreating(false);
-        setTimeout(() => navigate('/wallet'), 2000);
       } catch (error) {
         console.error('Error creating account:', error);
         setError('An error occurred while creating your account. Please try again.');
@@ -40,38 +37,49 @@ const CreateAccount: React.FC = () => {
     };
 
     createAccount();
-  }, [setWalletInfo, navigate]);
+  }, [setWalletInfo]);
 
-  const handleCancel = () => {
-    navigate('/');
+  const handleContinue = () => {
+    navigate('/wallet');
   };
 
   const handleRetry = () => {
     setIsCreating(true);
     setError(null);
+    setNewAccount(null);
   };
 
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
-        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
-          Creating Your Aztec Wallet
-        </h1>
-        {isCreating ? (
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Copied to clipboard!');
+    }, (err) => {
+      console.error('Could not copy text: ', err);
+    });
+  };
+
+  if (isCreating) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+          <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
+            Creating Your Aztec Wallet
+          </h1>
           <div data-testid="creating-account" className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-900 mx-auto mb-4"></div>
             <p className="text-xl mb-4">Creating Account...</p>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-4">
-              <div className="bg-blue-600 h-2.5 rounded-full w-1/2"></div>
-            </div>
-            <button 
-              onClick={handleCancel}
-              className="text-gray-500 hover:text-gray-700 transition duration-300 ease-in-out"
-            >
-              Cancel
-            </button>
           </div>
-        ) : error ? (
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+          <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
+            Error Creating Account
+          </h1>
           <div data-testid="account-error" className="text-center">
             <p className="text-red-500 mb-4">{error}</p>
             <button 
@@ -81,16 +89,53 @@ const CreateAccount: React.FC = () => {
               Retry
             </button>
           </div>
-        ) : (
-          <div data-testid="account-created" className="text-center">
-            <div className="text-green-500 text-5xl mb-4">✓</div>
-            <p className="text-xl mb-4">Account created successfully!</p>
-            <p>Redirecting to wallet...</p>
-          </div>
-        )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (newAccount) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+          <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
+            Your New Wallet
+          </h1>
+          <div data-testid="account-created" className="mb-6">
+            <div className="mb-4">
+              <p className="font-bold mb-2">Address:</p>
+              <div className="flex items-center">
+                <code className="bg-gray-100 p-2 rounded break-all">{newAccount.address}</code>
+                <button 
+                  onClick={() => copyToClipboard(newAccount.address)}
+                  className="ml-2 text-blue-500 hover:text-blue-700"
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+            <div className="mb-4">
+              <p className="font-bold mb-2">Private Key:</p>
+              <code className="bg-gray-100 p-2 rounded break-all block">{newAccount.privateKey}</code>
+            </div>
+            <div className="mb-4">
+              <p className="font-bold mb-2">Transaction Signing Key:</p>
+              <code className="bg-gray-100 p-2 rounded break-all block">{newAccount.transactionSigningKey}</code>
+            </div>
+            <p className="text-red-500 font-bold mb-4">Warning: Never share your private key or transaction signing key!</p>
+          </div>
+          <button 
+            onClick={handleContinue}
+            className="w-full bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out"
+          >
+            Continue to Wallet
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 };
 
 export default CreateAccount;
