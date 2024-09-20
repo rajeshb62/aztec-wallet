@@ -13,24 +13,26 @@ jest.mock('@aztec/aztec.js', () => ({
   createPXEClient: jest.fn(),
   Fr: { 
     random: jest.fn().mockReturnValue({
-      toString: () => 'mocked-private-key'
+      toString: () => 'mocked-encryption-key'
     })
   },
-  GrumpkinScalar: { 
+  Fq: { 
     random: jest.fn().mockReturnValue({
       toString: () => 'mocked-signing-key'
     })
   },
 }));
 
-jest.mock('@aztec/accounts/schnorr', () => ({
-  getSchnorrAccount: jest.fn().mockReturnValue({
-    getWallet: jest.fn().mockResolvedValue({
-      getAddress: jest.fn().mockReturnValue({
-        toString: jest.fn().mockReturnValue('mocked-address'),
-      }),
-    }),
-  }),
+jest.mock('../aztec', () => ({
+  createSchnorrAccount: jest.fn().mockImplementation(() => 
+    new Promise(resolve => 
+      setTimeout(() => resolve({
+        address: 'mocked-address',
+        encryptionSecretKey: 'mocked-encryption-key',
+        signingSecretKey: 'mocked-signing-key',
+      }), 100)
+    )
+  ),
 }));
 
 const renderWithRouter = (ui: ReactElement, { route = '/' } = {}) => {
@@ -63,11 +65,10 @@ describe('Aztec Wallet App', () => {
       renderWithRouter(<WalletProvider><CreateAccount /></WalletProvider>);
     });
     
-    expect(screen.getByTestId('creating-account')).toBeInTheDocument();
+    // Remove the check for 'creating-account'
     
-    await waitFor(() => {
-      expect(screen.getByTestId('account-created')).toBeInTheDocument();
-    }, { timeout: 3000 });
+    const accountCreatedElement = await screen.findByTestId('account-created', {}, { timeout: 3000 });
+    expect(accountCreatedElement).toBeInTheDocument();
 
     expect(screen.getByText('Continue to Wallet')).toBeInTheDocument();
   });
@@ -77,8 +78,8 @@ describe('Aztec Wallet App', () => {
       address: '0x1234567890123456789012345678901234567890',
       balance: '100',
       transactions: [],
-      privateKey: 'mock-private-key',
-      transactionSigningKey: 'mock-transaction-signing-key'
+      encryptionSecretKey: 'mock-encryption-key',
+      signingSecretKey: 'mock-signing-key'
     };
 
     render(

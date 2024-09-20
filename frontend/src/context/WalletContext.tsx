@@ -4,8 +4,8 @@ export interface WalletInfo {
   address: string;
   balance: string;
   transactions: any[]; // You might want to define a more specific type for transactions
-  privateKey: string;
-  transactionSigningKey: string;
+  encryptionSecretKey: string;
+  signingSecretKey: string;
 }
 
 interface WalletContextType {

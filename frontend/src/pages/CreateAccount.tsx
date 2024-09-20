@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../context/WalletContext';
-
-const getSchnorrAccount = async () => {
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  return {
-    address: '0x' + Math.random().toString(16).substr(2, 40),
-    privateKey: Math.random().toString(16).substr(2, 64),
-    transactionSigningKey: Math.random().toString(16).substr(2, 64),
-  };
-};
+import { createSchnorrAccount } from '../aztec';
 
 const CreateAccount: React.FC = () => {
   const [isCreating, setIsCreating] = useState(true);
@@ -21,7 +13,7 @@ const CreateAccount: React.FC = () => {
   useEffect(() => {
     const createAccount = async () => {
       try {
-        const account = await getSchnorrAccount();
+        const account = await createSchnorrAccount();
         setNewAccount(account);
         setWalletInfo({
           ...account,
@@ -115,14 +107,14 @@ const CreateAccount: React.FC = () => {
               </div>
             </div>
             <div className="mb-4">
-              <p className="font-bold mb-2">Private Key:</p>
-              <code className="bg-gray-100 p-2 rounded break-all block">{newAccount.privateKey}</code>
+              <p className="font-bold mb-2">Encryption Secret Key:</p>
+              <code className="bg-gray-100 p-2 rounded break-all block">{newAccount.encryptionSecretKey}</code>
             </div>
             <div className="mb-4">
-              <p className="font-bold mb-2">Transaction Signing Key:</p>
-              <code className="bg-gray-100 p-2 rounded break-all block">{newAccount.transactionSigningKey}</code>
+              <p className="font-bold mb-2">Signing Secret Key:</p>
+              <code className="bg-gray-100 p-2 rounded break-all block">{newAccount.signingSecretKey}</code>
             </div>
-            <p className="text-red-500 font-bold mb-4">Warning: Never share your private key or transaction signing key!</p>
+            <p className="text-red-500 font-bold mb-4">Warning: Never share your encryption secret key or signing secret key!</p>
           </div>
           <button 
             onClick={handleContinue}
