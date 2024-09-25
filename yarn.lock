@@ -320,6 +320,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@aztec/noir-contracts.js@npm:0.55.0":
+  version: 0.55.0
+  resolution: "@aztec/noir-contracts.js@npm:0.55.0"
+  dependencies:
+    "@aztec/aztec.js": "npm:0.55.0"
+    tslib: "npm:^2.4.0"
+  checksum: 26f6e39a7f5ab54cabf286460b21ed061237b4bf8f14849c312df936dbca2d9b10956639a5ee37034592a9a8ff24a98787ac7f4e7f25669583ab0b3d3033a1eb
+  languageName: node
+  linkType: hard
+
 "@aztec/protocol-contracts@npm:0.55.0":
   version: 0.55.0
   resolution: "@aztec/protocol-contracts@npm:0.55.0"
@@ -3332,6 +3342,7 @@ __metadata:
   dependencies:
     "@aztec/accounts": "npm:0.55.0"
     "@aztec/aztec.js": "npm:0.55.0"
+    "@aztec/noir-contracts.js": "npm:0.55.0"
     "@babel/preset-env": "npm:^7.25.4"
     "@babel/preset-react": "npm:^7.24.7"
     "@testing-library/jest-dom": "npm:^5.16.5"

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "dest",
     "tsBuildInfoFile": ".tsbuildinfo",
     "target": "es2020",
@@ -19,7 +19,18 @@
     "resolveJsonModule": true,
     "composite": true,
     "skipLibCheck": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@aztec/noir-contracts.js/*": ["node_modules/@aztec/noir-contracts.js/*"]
+    }
   },
-  "include": ["src", "src/**/*.json", "src/artifacts/*"]
+  "include": [
+    "index.ts",
+    "interactWithToken.ts",
+    "src/**/*.ts",
+    "src/**/*.json",
+    "src/artifacts/*",
+    "target/**/*.json"
+  ]
 }

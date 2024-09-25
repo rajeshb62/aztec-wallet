@@ -95,3 +95,5 @@ changes to make in getting real schnorr account:
 4. we need to make changes in the wallet component to handle the new objects.
 what is stored in context, where walletinfo is defined. walletinfo has address as string, encryptionSecretKey as string, signingSecretKey as string, balance, transactions as its properties. does this make sense. is it what we want? why dont we retain it as the wallet object as defined by aztec.
 Wallet component does not need to show EncryptionSecretKey and SigningSecretKey. it only needs to show the address and balance. the transaction signing key is only needed for signing transactions, which we currently do not support. the private key is only needed for creating public key and we do not need to show that. so we can remove all these from context. we are only left with address and balance.
+
+add initialization or waiting logic for pxe client in aztec.tsx.
