@@ -78,13 +78,13 @@ The main wallet functionality (display of address, private key, transaction sign
 
 
 'Sign in if you have an account' story:
-on the home screen, on clicking 'Already have an account? Sign in', the user is redirected to the 'enter private key' screen. this screen has a form with 1 field 'Enter your private key'. once the user enters their private key and clicks on 'Sign in', they are redirected to the wallet component. Wallet component would then be for ongoing use of the wallet, rather than initial account information display. showing the address and balance (when implemented). Add placeholder for transaction history or other wallet functions.
+on the home screen, on clicking 'Already have an account? Sign in', the user is redirected to the 'enter private key' screen. this screen has a form with 1 field 'Enter your private key'. once the user enters their private key which is essentially the encryptionSecretKey and another key, transaction signing key and clicks on 'Sign in', we fetch the account and wallet, when successfully done, user are redirected to the wallet component. if the credentials are not correct, show error and redirect to landing page/ component. salt=0
 
 
 implement createschnorr account functionality in the frontend. for real:
 As shown in @aztec.tsx there is a way to use @getSchnorrAccount.
   @createSchnorrAccount has the details. we start in the create-account component. we want to create the schnorr account. first create the pxe client and return it as an object. once @pxe object is available in the function to create schnorr account,  then generate at random an @encryptionSecretKey   and @signingSecretKey . 
-now create new account by calling @getSchnorrAccount with the parameters we already have. get @Wallet  object for the account. return an object with 3 properties: the wallet @address (User Address) , @encryptionSecretKey (Private Key) and @signingSecretKey (Transaction Signing Key) 
+now create new account by calling @getSchnorrAccount with the parameters we already have. get @Wallet  object for the account. return an object with 3 properties: the wallet @address (User Address) , @encryptionSecretKey (Private Key) and @signingSecretKey (Transaction Signing Key) . use salt=0
 
 separate creating pxe client and creating schnorr account in aztec.tsx. because pxe is used much more widely in in the lifetime of a user. user will use it to hold their private data including tokens, transactions, etc. the create schnorr account once at the beginning of their use.
 
@@ -97,3 +97,7 @@ what is stored in context, where walletinfo is defined. walletinfo has address a
 Wallet component does not need to show EncryptionSecretKey and SigningSecretKey. it only needs to show the address and balance. the transaction signing key is only needed for signing transactions, which we currently do not support. the private key is only needed for creating public key and we do not need to show that. so we can remove all these from context. we are only left with address and balance.
 
 add initialization or waiting logic for pxe client in aztec.tsx.
+
+deploy a token contract name, symbol, total supply. transfer some tokens to address from terminal.
+
+add token feature to frontend. show token balance for hardcoded token contract. show token amount. put dummy value as 0 always for now. first log the balance quantity of tokens for token address for signed in user address. 

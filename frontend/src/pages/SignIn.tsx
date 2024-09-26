@@ -1,14 +1,38 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { fetchAccount } from '../aztec';
+import { useWallet } from '../context/WalletContext';
 
 const SignIn: React.FC = () => {
-  const [privateKey, setPrivateKey] = useState('');
+  const [encryptionKey, setEncryptionKey] = useState('');
+  const [signingKey, setSigningKey] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { setWalletInfo } = useWallet();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('fetch account from sandbox');
-    // TODO: Implement actual sign-in logic
+    setError(null);
+
+    try {
+      const accountInfo = await fetchAccount(encryptionKey, signingKey);
+      console.log('Account fetched:', accountInfo);
+
+      // Update the wallet context with the new account info
+      setWalletInfo({
+        address: accountInfo.address,
+        balance: '0', // You might want to fetch the actual balance here
+        transactions: [],
+        encryptionSecretKey: encryptionKey,
+        signingSecretKey: signingKey,
+      });
+
+      // Navigate to the wallet page
+      navigate('/wallet');
+    } catch (error) {
+      console.error('Error fetching account:', error);
+      setError('Failed to fetch account. Please check your keys and try again.');
+    }
   };
 
   return (
@@ -19,19 +43,34 @@ const SignIn: React.FC = () => {
         </h1>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="privateKey" className="block text-gray-700 text-sm font-bold mb-2">
-              Enter your private key
+            <label htmlFor="encryptionKey" className="block text-gray-700 text-sm font-bold mb-2">
+              Enter your Encryption Secret Key
             </label>
             <input
               type="password"
-              id="privateKey"
-              value={privateKey}
-              onChange={(e) => setPrivateKey(e.target.value)}
+              id="encryptionKey"
+              value={encryptionKey}
+              onChange={(e) => setEncryptionKey(e.target.value)}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              placeholder="Your private key"
+              placeholder="Your Encryption Secret Key"
               required
             />
           </div>
+          <div className="mb-4">
+            <label htmlFor="signingKey" className="block text-gray-700 text-sm font-bold mb-2">
+              Enter your Signing Secret Key
+            </label>
+            <input
+              type="password"
+              id="signingKey"
+              value={signingKey}
+              onChange={(e) => setSigningKey(e.target.value)}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              placeholder="Your Signing Secret Key"
+              required
+            />
+          </div>
+          {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
           <button
             type="submit"
             className="w-full bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out"
