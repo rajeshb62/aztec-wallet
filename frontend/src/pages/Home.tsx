@@ -9,7 +9,7 @@ const Home: React.FC = () => {
   };
 
   const handleSignIn = () => {
-    console.log('Already have an account? Sign in');
+    navigate('/sign-in'); // Navigate to the new sign-in page
   };
 
   return (
