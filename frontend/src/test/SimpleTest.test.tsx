@@ -6,6 +6,7 @@ import { WalletProvider, WalletInfo } from '../context/WalletContext';
 import Home from '../pages/Home';
 import Wallet from '../pages/Wallet';
 import CreateAccount from '../pages/CreateAccount';
+import SignIn from '../pages/SignIn'; // Add this import
 import { act } from 'react-dom/test-utils';
 
 // Mock the Aztec.js functions
@@ -52,12 +53,22 @@ describe('Aztec Wallet App', () => {
     expect(screen.getByText('Already have an account? Sign in')).toBeInTheDocument();
   });
 
-  test('clicking sign in logs to console', () => {
-    const consoleSpy = jest.spyOn(console, 'log');
-    renderWithRouter(<WalletProvider><Home /></WalletProvider>);
-    fireEvent.click(screen.getByText('Already have an account? Sign in'));
-    expect(consoleSpy).toHaveBeenCalledWith('Already have an account? Sign in');
-    consoleSpy.mockRestore();
+  test('clicking sign in navigates to sign in page with correct elements', () => {
+    const { getByText, getByPlaceholderText, getByRole } = renderWithRouter(
+      <WalletProvider>
+        <Home />
+        <SignIn />
+      </WalletProvider>
+    );
+    
+    fireEvent.click(getByText('Already have an account? Sign in'));
+    
+    // Check for two input fields for secrets
+    expect(getByPlaceholderText('Your Encryption Secret Key')).toBeInTheDocument();
+    expect(getByPlaceholderText('Your Signing Secret Key')).toBeInTheDocument();
+    
+    // Check for the Sign In button
+    expect(getByRole('button', { name: 'Sign In' })).toBeInTheDocument();
   });
 
   test('create account process', async () => {
