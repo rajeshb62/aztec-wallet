@@ -2,9 +2,16 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchAccount } from '../aztec';
 import { useWallet } from '../context/WalletContext';
+import { createHash } from 'crypto';
+
+// Function to hash a string
+const stringToHash = (inputString: string): string => {
+  // Hash the input string using SHA-256
+  return createHash('sha256').update(inputString).digest('hex');
+};
 
 const SignIn: React.FC = () => {
-  const [encryptionKey, setEncryptionKey] = useState('');
+  const [email, setEmail] = useState('');
   const [signingKey, setSigningKey] = useState('');
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -14,8 +21,11 @@ const SignIn: React.FC = () => {
     e.preventDefault();
     setError(null);
 
+    const emailDerivedEncryptionKey = stringToHash(email);
+    console.log('Email-derived encryption key:', emailDerivedEncryptionKey);
+
     try {
-      const accountInfo = await fetchAccount(encryptionKey, signingKey);
+      const accountInfo = await fetchAccount(emailDerivedEncryptionKey, signingKey);
       console.log('Account fetched:', accountInfo);
 
       // Update the wallet context with the new account info
@@ -23,7 +33,7 @@ const SignIn: React.FC = () => {
         address: accountInfo.address,
         balance: '0', // You might want to fetch the actual balance here
         transactions: [],
-        encryptionSecretKey: encryptionKey,
+        encryptionSecretKey: emailDerivedEncryptionKey,
         signingSecretKey: signingKey,
       });
 
@@ -31,7 +41,7 @@ const SignIn: React.FC = () => {
       navigate('/wallet');
     } catch (error) {
       console.error('Error fetching account:', error);
-      setError('Failed to fetch account. Please check your keys and try again.');
+      setError('Failed to fetch account. Please check your email and signing key and try again.');
     }
   };
 
@@ -43,16 +53,17 @@ const SignIn: React.FC = () => {
         </h1>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="encryptionKey" className="block text-gray-700 text-sm font-bold mb-2">
-              Enter your Encryption Secret Key
+            <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">
+              Enter email ID
             </label>
             <input
-              type="password"
-              id="encryptionKey"
-              value={encryptionKey}
-              onChange={(e) => setEncryptionKey(e.target.value)}
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onBlur={(e) => console.log('Email entered:', e.target.value)}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              placeholder="Your Encryption Secret Key"
+              placeholder="Your email address"
               required
             />
           </div>
