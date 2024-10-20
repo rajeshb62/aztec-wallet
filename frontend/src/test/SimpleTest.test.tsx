@@ -6,7 +6,7 @@ import { WalletProvider, WalletInfo } from '../context/WalletContext';
 import Home from '../pages/Home';
 import Wallet from '../pages/Wallet';
 import CreateAccount from '../pages/CreateAccount';
-import SignIn from '../pages/SignIn'; // Add this import
+import SignIn from '../pages/SignIn';
 import { act } from 'react-dom/test-utils';
 
 // Mock the Aztec.js functions
@@ -34,6 +34,10 @@ jest.mock('../aztec', () => ({
       }), 100)
     )
   ),
+  fetchAccount: jest.fn().mockResolvedValue({
+    address: 'mocked-address',
+    wallet: {}
+  }),
 }));
 
 const renderWithRouter = (ui: ReactElement, { route = '/' } = {}) => {
@@ -63,8 +67,10 @@ describe('Aztec Wallet App', () => {
     
     fireEvent.click(getByText('Already have an account? Sign in'));
     
-    // Check for two input fields for secrets
-    expect(getByPlaceholderText('Your Encryption Secret Key')).toBeInTheDocument();
+    // Check for email input field
+    expect(getByPlaceholderText('Your email address')).toBeInTheDocument();
+    
+    // Check for signing key input field
     expect(getByPlaceholderText('Your Signing Secret Key')).toBeInTheDocument();
     
     // Check for the Sign In button
@@ -75,8 +81,6 @@ describe('Aztec Wallet App', () => {
     await act(async () => {
       renderWithRouter(<WalletProvider><CreateAccount /></WalletProvider>);
     });
-    
-    // Remove the check for 'creating-account'
     
     const accountCreatedElement = await screen.findByTestId('account-created', {}, { timeout: 3000 });
     expect(accountCreatedElement).toBeInTheDocument();
@@ -105,5 +109,24 @@ describe('Aztec Wallet App', () => {
     expect(screen.getByText(/Address:/)).toBeInTheDocument();
     expect(screen.getByText('100 ETH')).toBeInTheDocument();
     expect(screen.getByText('No transactions yet.')).toBeInTheDocument();
+  });
+
+  test('sign in process', async () => {
+    const { getByPlaceholderText, getByRole } = renderWithRouter(
+      <WalletProvider>
+        <SignIn />
+      </WalletProvider>
+    );
+
+    fireEvent.change(getByPlaceholderText('Your email address'), { target: { value: 'test@example.com' } });
+    fireEvent.change(getByPlaceholderText('Your Signing Secret Key'), { target: { value: 'test-signing-key' } });
+
+    await act(async () => {
+      fireEvent.click(getByRole('button', { name: 'Sign In' }));
+    });
+
+    // Add assertions here to check if the sign-in process worked correctly
+    // For example, you might want to check if it navigated to the wallet page
+    // or if the WalletContext was updated correctly
   });
 });
