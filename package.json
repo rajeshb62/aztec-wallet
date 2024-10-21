@@ -14,7 +14,9 @@
     "clean": "rm -rf ./src/artifacts ./target",
     "codegen": "aztec codegen target --outdir src/artifacts",
     "compile": "${AZTEC_NARGO:-aztec-nargo} compile",
-    "test": "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json && yarn workspace frontend test",
+    "deploy": "node --loader ts-node/esm scripts/deploy.ts",
+    "get-block": "node --loader ts-node/esm scripts/getBlock.ts",
+    "test": "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json && aztec test && yarn workspace frontend test",
     "test:frontend": "yarn workspace frontend test",
     "update": "aztec update --contract . && ./.github/scripts/update_contract.sh $(grep -oP 'tag\\s*=\\s*\"\\K[^\"]+' \"Nargo.toml\" | head -1)",
     "postinstall": "patch-package",
@@ -23,11 +25,13 @@
     "send-tokens": "DEBUG=token yarn build && node dest/index.js interact"
   },
   "dependencies": {
-    "@aztec/aztec.js": "0.55.0",
-    "@aztec/noir-contracts.js": "0.55.0"
+    "@aztec/accounts": "0.57.0",
+    "@aztec/aztec.js": "0.57.0",
+    "@aztec/noir-contracts.js": "0.57.0",
+    "@types/node": "^22.5.1"
   },
   "devDependencies": {
-    "@aztec/accounts": "0.55.0",
+    "@aztec/accounts": "0.57.0",
     "@babel/core": "^7.25.8",
     "@babel/preset-env": "^7.25.4",
     "@babel/preset-react": "^7.24.7",
@@ -38,6 +42,7 @@
     "@types/identity-obj-proxy": "^3",
     "@types/jest": "^29.5.11",
     "@types/mocha": "^10.0.6",
+    "@types/node": "^22.5.1",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "identity-obj-proxy": "^3.0.0",
@@ -47,7 +52,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "ts-jest": "^29.1.1",
-    "typescript": "^5.3.3"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.4"
   },
   "jest": {
     "testTimeout": 200000

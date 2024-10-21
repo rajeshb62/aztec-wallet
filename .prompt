@@ -101,3 +101,11 @@ add initialization or waiting logic for pxe client in aztec.tsx.
 deploy a token contract name, symbol, total supply. transfer some tokens to address from terminal.
 
 add token feature to frontend. show token balance for hardcoded token contract. show token amount. put dummy value as 0 always for now. first log the balance quantity of tokens for token address for signed in user address. 
+
+email id as input in ui. hash it and use it as input in getSchnorrAccount method
+
+this error - fs/promises related in github codespaces. how to fix. 
+
+if an account with an email is already registered, then if user uses different signing key next time, it should not create a totally new and different account. it should throw up error saying wrong signing key! else if a new account for created everytime a different signing key is used for same email, that results in terrible user experience.
+
+version update of aztec to 0.57.0 is breaking smart contract tests. compiles well. but tests break. reference repo, aztec-starter on github works. 
