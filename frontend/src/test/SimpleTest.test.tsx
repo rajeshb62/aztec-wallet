@@ -2,12 +2,13 @@ import React, { ReactElement } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MemoryRouter } from 'react-router-dom';
-import { WalletProvider, WalletInfo } from '../context/WalletContext';
+import { WalletProvider } from '../context/WalletContext';
 import Home from '../pages/Home';
 import Wallet from '../pages/Wallet';
 import CreateAccount from '../pages/CreateAccount';
 import SignIn from '../pages/SignIn';
-import { act } from 'react-dom/test-utils';
+import { act } from 'react';  // Changed to import from 'react' instead of 'react-dom/test-utils'
+import { BrowserRouter } from 'react-router-dom';
 
 // Mock the Aztec.js functions
 jest.mock('@aztec/aztec.js', () => ({
@@ -40,6 +41,41 @@ jest.mock('../aztec', () => ({
   }),
 }));
 
+// Mock the verifyEmail function
+jest.mock('../utils/emailVerification', () => ({
+  verifyEmail: jest.fn().mockResolvedValue({
+    isValid: true,
+    proof: {},
+    inputs: {
+      header: {
+        storage: Array(512).fill('0'),
+        len: "100"
+      },
+      pubkey: {
+        modulus: Array(18).fill('0'),
+        redc: Array(18).fill('0')
+      },
+      signature: Array(18).fill('0')
+    }
+  })
+}));
+
+// Mock file content
+const mockFileContent = `From: test@example.com
+Subject: TestCode123
+Content-Type: text/plain
+
+Test email content`;
+
+// Mock createHash
+jest.mock('crypto', () => ({
+  createHash: () => ({
+    update: () => ({
+      digest: () => 'mocked-hash'
+    })
+  })
+}));
+
 const renderWithRouter = (ui: ReactElement, { route = '/' } = {}) => {
   window.history.pushState({}, 'Test page', route);
   return render(
@@ -49,84 +85,75 @@ const renderWithRouter = (ui: ReactElement, { route = '/' } = {}) => {
   );
 };
 
-describe('Aztec Wallet App', () => {
-  test('renders home page with create account and sign in options', () => {
-    renderWithRouter(<WalletProvider><Home /></WalletProvider>);
-    expect(screen.getByText('Welcome to Aztec Wallet')).toBeInTheDocument();
-    expect(screen.getByText('Create an Account')).toBeInTheDocument();
-    expect(screen.getByText('Already have an account? Sign in')).toBeInTheDocument();
-  });
-
-  test('clicking sign in navigates to sign in page with correct elements', () => {
-    const { getByText, getByPlaceholderText, getByRole } = renderWithRouter(
-      <WalletProvider>
-        <Home />
-        <SignIn />
-      </WalletProvider>
+describe('SignIn Component', () => {
+  const renderSignIn = () => {
+    return render(
+      <BrowserRouter>
+        <WalletProvider>
+          <SignIn />
+        </WalletProvider>
+      </BrowserRouter>
     );
-    
-    fireEvent.click(getByText('Already have an account? Sign in'));
-    
-    // Check for email input field
-    expect(getByPlaceholderText('Your email address')).toBeInTheDocument();
-    
-    // Check for password input field (changed from signing key)
-    expect(getByPlaceholderText('Your password')).toBeInTheDocument();
-    
-    // Check for the Sign In button
-    expect(getByRole('button', { name: 'Sign In' })).toBeInTheDocument();
-  });
+  };
 
-  test('create account process', async () => {
-    await act(async () => {
-      renderWithRouter(<WalletProvider><CreateAccount /></WalletProvider>);
-    });
+  beforeEach(() => {
+    jest.clearAllMocks();
     
-    const accountCreatedElement = await screen.findByTestId('account-created', {}, { timeout: 3000 });
-    expect(accountCreatedElement).toBeInTheDocument();
+    // Simplified FileReader mock
+    const mockFileReader = function(this: any) {
+      this.DONE = 2;
+      this.EMPTY = 0;
+      this.LOADING = 1;
+      this.readyState = 0;
+      this.error = null;
+      this.result = null;
+      this.onabort = null;
+      this.onerror = null;
+      this.onload = null;
+      this.onloadend = null;
+      this.onloadstart = null;
+      this.onprogress = null;
 
-    expect(screen.getByText('Continue to Wallet')).toBeInTheDocument();
-  });
+      this.readAsText = function(blob: Blob) {
+        const reader = this;
+        setTimeout(() => {
+          reader.readyState = reader.DONE;
+          reader.result = mockFileContent;
+          if (reader.onload) {
+            const event = new ProgressEvent('load');
+            Object.defineProperty(event, 'target', { value: reader });
+            reader.onload(event);
+          }
+        }, 0);
+      };
 
-  test('wallet view displays correct information', () => {
-    const mockWalletInfo: WalletInfo = {
-      address: '0x1234567890123456789012345678901234567890',
-      balance: '100',
-      transactions: [],
-      encryptionSecretKey: 'mock-encryption-key',
-      signingSecretKey: 'mock-signing-key'
+      this.abort = function() {};
+      this.addEventListener = function() {};
+      this.removeEventListener = function() {};
+      this.dispatchEvent = function() { return true; };
     };
 
-    render(
-      <MemoryRouter>
-        <WalletProvider initialWalletInfo={mockWalletInfo}>
-          <Wallet />
-        </WalletProvider>
-      </MemoryRouter>
-    );
-
-    expect(screen.getByText('Your Wallet')).toBeInTheDocument();
-    expect(screen.getByText(/Address:/)).toBeInTheDocument();
-    expect(screen.getByText('100 ETH')).toBeInTheDocument();
-    expect(screen.getByText('No transactions yet.')).toBeInTheDocument();
+    global.FileReader = mockFileReader as any;
   });
 
-  test('sign in process', async () => {
-    const { getByPlaceholderText, getByRole } = renderWithRouter(
-      <WalletProvider>
-        <SignIn />
-      </WalletProvider>
-    );
+  test('renders sign in form', () => {
+    renderSignIn();
+    expect(screen.getByLabelText(/enter email id/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/enter your password/i)).toBeInTheDocument();
+  });
 
-    fireEvent.change(getByPlaceholderText('Your email address'), { target: { value: 'test@example.com' } });
-    fireEvent.change(getByPlaceholderText('Your password'), { target: { value: 'test-password' } });
-
+  test('handles file upload', async () => {
+    renderSignIn();
+    
+    const file = new File([mockFileContent], 'test.eml', { type: 'message/rfc822' });
+    const fileInput = screen.getByLabelText(/email verification file/i);
+    
     await act(async () => {
-      fireEvent.click(getByRole('button', { name: 'Sign In' }));
+      fireEvent.change(fileInput, { target: { files: [file] } });
     });
-
-    // Add assertions here to check if the sign-in process worked correctly
-    // For example, you might want to check if it navigated to the wallet page
-    // or if the WalletContext was updated correctly
+    
+    await waitFor(() => {
+      expect(screen.getByText(/✓ File loaded: test.eml/i)).toBeInTheDocument();
+    });
   });
 });

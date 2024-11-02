@@ -5,7 +5,6 @@ import { useWallet } from '../context/WalletContext';
 import { createHash } from 'crypto';
 import { verifyEmail } from '../utils/emailVerification';
 
-
 // Function to hash a string
 const stringToHash = (inputString: string): string => {
   return createHash('sha256').update(inputString).digest('hex');
@@ -59,13 +58,17 @@ const SignIn: React.FC = () => {
   const [verificationCode, setVerificationCode] = useState('');
   const [emlContent, setEmlContent] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [showEmailVerification, setShowEmailVerification] = useState(false);
   const navigate = useNavigate();
   const { setWalletInfo } = useWallet();
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<{
     isValid: boolean;
-    proof?: Uint8Array;
+    proof?: any;
+    inputs?: {
+      header: { storage: any[]; len: string };
+      pubkey: { modulus: string[]; redc: string[] };
+      signature: string[];
+    };
   } | null>(null);
   const [emlFile, setEmlFile] = useState<File | null>(null);
 
@@ -131,13 +134,17 @@ const SignIn: React.FC = () => {
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const content = await file.text();
-        setEmlContent(content);
-        setEmlFile(file);
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = event.target?.result as string;
+          setEmlContent(content);
+          setEmlFile(file);
+        };
+        reader.readAsText(file);
       } catch (error) {
         console.error('Error reading file:', error);
         setError('Failed to read the email file. Please try again.');
@@ -227,7 +234,6 @@ const SignIn: React.FC = () => {
           {isVerifying && (
             <div className="mb-4 text-center">
               <p className="text-gray-700">Verifying email ownership...</p>
-              {/* Add a loading spinner here if desired */}
             </div>
           )}
 
@@ -256,4 +262,5 @@ const SignIn: React.FC = () => {
   );
 };
 
+// Make sure this line is exactly as shown:
 export default SignIn;
