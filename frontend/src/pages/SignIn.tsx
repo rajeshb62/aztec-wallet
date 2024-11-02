@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { fetchAccount } from '../aztec';
 import { useWallet } from '../context/WalletContext';
 import { createHash } from 'crypto';
+import { verifyEmail } from '../utils/emailVerification';
+
 
 // Function to hash a string
 const stringToHash = (inputString: string): string => {
@@ -60,6 +62,12 @@ const SignIn: React.FC = () => {
   const [showEmailVerification, setShowEmailVerification] = useState(false);
   const navigate = useNavigate();
   const { setWalletInfo } = useWallet();
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationResult, setVerificationResult] = useState<{
+    isValid: boolean;
+    proof?: Uint8Array;
+  } | null>(null);
+  const [emlFile, setEmlFile] = useState<File | null>(null);
 
   // Generate verification code when email and password are entered
   useEffect(() => {
@@ -71,34 +79,38 @@ const SignIn: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    if (!emlContent) {
-      setError('Please provide the email verification content.');
-      return;
-    }
-
-    const emailData = extractEmailFromEml(emlContent);
-    if (!emailData) {
-      setError('Could not parse email content. Please ensure you provided a valid .eml file content.');
-      return;
-    }
-
-    // Verify email ownership
-    if (emailData.fromEmail.toLowerCase() !== email.toLowerCase()) {
-      setError('The email address in the verification email does not match the entered email.');
-      return;
-    }
-
-    // Verify verification code
-    if (!emailData.subject.includes(verificationCode)) {
-      setError('Could not find verification code in email subject.');
-      return;
-    }
-
-    const emailDerivedEncryptionKey = stringToHash(email + password);
-    const passwordDerivedSigningKey = stringToHash(password);
+    setIsVerifying(true);
 
     try {
+      if (!emlContent) {
+        throw new Error('Please provide the email verification content.');
+      }
+
+      // First verify email ownership using ZK proof
+      const verification = await verifyEmail(emlContent);
+      setVerificationResult(verification);
+
+      if (!verification.isValid) {
+        throw new Error('Email verification failed. The email content might be tampered.');
+      }
+
+      // Continue with existing email parsing and verification
+      const emailData = extractEmailFromEml(emlContent);
+      if (!emailData) {
+        throw new Error('Could not parse email content. Please ensure you provided a valid .eml file content.');
+      }
+
+      if (emailData.fromEmail.toLowerCase() !== email.toLowerCase()) {
+        throw new Error('The email address in the verification email does not match the entered email.');
+      }
+
+      if (!emailData.subject.includes(verificationCode)) {
+        throw new Error('Could not find verification code in email subject.');
+      }
+
+      const emailDerivedEncryptionKey = stringToHash(email + password);
+      const passwordDerivedSigningKey = stringToHash(password);
+
       const accountInfo = await fetchAccount(emailDerivedEncryptionKey, passwordDerivedSigningKey);
       console.log('Account fetched:', accountInfo);
 
@@ -112,8 +124,24 @@ const SignIn: React.FC = () => {
 
       navigate('/wallet');
     } catch (error) {
-      console.error('Error fetching account:', error);
-      setError('Failed to fetch account. Please check your email and password and try again.');
+      console.error('Error:', error);
+      setError(error instanceof Error ? error.message : 'An unknown error occurred');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const content = await file.text();
+        setEmlContent(content);
+        setEmlFile(file);
+      } catch (error) {
+        console.error('Error reading file:', error);
+        setError('Failed to read the email file. Please try again.');
+      }
     }
   };
 
@@ -121,7 +149,7 @@ const SignIn: React.FC = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
         <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
-          Sign In to Your Wallet
+          Verify email ownership and Sign In
         </h1>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -162,33 +190,65 @@ const SignIn: React.FC = () => {
                 <li>Send an email to rajesh@ragya.com</li>
                 <li>Include this code in the subject: <span className="font-mono font-bold">{verificationCode}</span></li>
                 <li>Download the sent email as .eml file</li>
-                <li>Paste the contents below</li>
+                <li>Upload the .eml file below</li>
               </ol>
             </div>
           )}
 
           <div className="mb-4">
-            <label htmlFor="emlContent" className="block text-gray-700 text-sm font-bold mb-2">
-              Email Verification Content (.eml)
+            <label htmlFor="emlFile" className="block text-gray-700 text-sm font-bold mb-2">
+              Email Verification File (.eml)
             </label>
-            <textarea
-              id="emlContent"
-              value={emlContent}
-              onChange={(e) => setEmlContent(e.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              placeholder="Paste the contents of your .eml file here"
-              rows={4}
-              required
-            />
+            <div className="flex items-center justify-center w-full">
+              <label className="w-full flex flex-col items-center px-4 py-6 bg-white text-gray-700 rounded-lg shadow-lg tracking-wide border border-gray-300 cursor-pointer hover:bg-gray-50">
+                <svg className="w-8 h-8" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                  <path d="M16.88 9.1A4 4 0 0 1 16 17H5a5 5 0 0 1-1-9.9V7a3 3 0 0 1 4.52-2.59A4.98 4.98 0 0 1 17 8c0 .38-.04.74-.12 1.1zM11 11h3l-4-4-4 4h3v3h2v-3z" />
+                </svg>
+                <span className="mt-2 text-sm">
+                  {emlFile ? emlFile.name : 'Select .eml file'}
+                </span>
+                <input
+                  type="file"
+                  id="emlFile"
+                  accept=".eml"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                  required
+                />
+              </label>
+            </div>
+            {emlFile && (
+              <p className="mt-2 text-sm text-green-600">
+                ✓ File loaded: {emlFile.name}
+              </p>
+            )}
           </div>
+
+          {isVerifying && (
+            <div className="mb-4 text-center">
+              <p className="text-gray-700">Verifying email ownership...</p>
+              {/* Add a loading spinner here if desired */}
+            </div>
+          )}
+
+          {verificationResult && (
+            <div className={`mb-4 p-4 rounded-lg ${verificationResult.isValid ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+              <p>
+                Email verification: {verificationResult.isValid ? 'Valid ✓' : 'Invalid ✗'}
+              </p>
+            </div>
+          )}
 
           {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
           
           <button
             type="submit"
-            className="w-full bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out"
+            disabled={isVerifying}
+            className={`w-full bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out ${
+              isVerifying ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
           >
-            Sign In
+            {isVerifying ? 'Verifying...' : 'Sign In'}
           </button>
         </form>
       </div>

@@ -16,7 +16,19 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Node.js types */
+    "types": ["node"],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    
+    /* Workspace Resolution */
+    "composite": true,
+    "rootDir": ".",
+    "paths": {
+      "*": ["../node_modules/*"]
+    }
   },
   "include": ["vite.config.ts"]
 }
