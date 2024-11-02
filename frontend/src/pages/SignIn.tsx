@@ -12,7 +12,7 @@ const stringToHash = (inputString: string): string => {
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState('');
-  const [signingKey, setSigningKey] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { setWalletInfo } = useWallet();
@@ -22,10 +22,13 @@ const SignIn: React.FC = () => {
     setError(null);
 
     const emailDerivedEncryptionKey = stringToHash(email);
+    const passwordDerivedSigningKey = stringToHash(password);
+
     console.log('Email-derived encryption key:', emailDerivedEncryptionKey);
+    console.log('Password-derived signing key:', passwordDerivedSigningKey);
 
     try {
-      const accountInfo = await fetchAccount(emailDerivedEncryptionKey, signingKey);
+      const accountInfo = await fetchAccount(emailDerivedEncryptionKey, passwordDerivedSigningKey);
       console.log('Account fetched:', accountInfo);
 
       // Update the wallet context with the new account info
@@ -34,14 +37,14 @@ const SignIn: React.FC = () => {
         balance: '0', // You might want to fetch the actual balance here
         transactions: [],
         encryptionSecretKey: emailDerivedEncryptionKey,
-        signingSecretKey: signingKey,
+        signingSecretKey: passwordDerivedSigningKey,
       });
 
       // Navigate to the wallet page
       navigate('/wallet');
     } catch (error) {
       console.error('Error fetching account:', error);
-      setError('Failed to fetch account. Please check your email and signing key and try again.');
+      setError('Failed to fetch account. Please check your email and password and try again.');
     }
   };
 
@@ -68,16 +71,16 @@ const SignIn: React.FC = () => {
             />
           </div>
           <div className="mb-4">
-            <label htmlFor="signingKey" className="block text-gray-700 text-sm font-bold mb-2">
-              Enter your Signing Secret Key
+            <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
+              Enter your Password
             </label>
             <input
               type="password"
-              id="signingKey"
-              value={signingKey}
-              onChange={(e) => setSigningKey(e.target.value)}
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              placeholder="Your Signing Secret Key"
+              placeholder="Your password"
               required
             />
           </div>
