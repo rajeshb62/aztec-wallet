@@ -21,7 +21,7 @@ const SignIn: React.FC = () => {
     e.preventDefault();
     setError(null);
 
-    const emailDerivedEncryptionKey = stringToHash(email);
+    const emailDerivedEncryptionKey = stringToHash(email + password);
     const passwordDerivedSigningKey = stringToHash(password);
 
     console.log('Email-derived encryption key:', emailDerivedEncryptionKey);

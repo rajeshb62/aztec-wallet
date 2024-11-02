@@ -70,8 +70,8 @@ describe('Aztec Wallet App', () => {
     // Check for email input field
     expect(getByPlaceholderText('Your email address')).toBeInTheDocument();
     
-    // Check for signing key input field
-    expect(getByPlaceholderText('Your Signing Secret Key')).toBeInTheDocument();
+    // Check for password input field (changed from signing key)
+    expect(getByPlaceholderText('Your password')).toBeInTheDocument();
     
     // Check for the Sign In button
     expect(getByRole('button', { name: 'Sign In' })).toBeInTheDocument();
@@ -119,7 +119,7 @@ describe('Aztec Wallet App', () => {
     );
 
     fireEvent.change(getByPlaceholderText('Your email address'), { target: { value: 'test@example.com' } });
-    fireEvent.change(getByPlaceholderText('Your Signing Secret Key'), { target: { value: 'test-signing-key' } });
+    fireEvent.change(getByPlaceholderText('Your password'), { target: { value: 'test-password' } });
 
     await act(async () => {
       fireEvent.click(getByRole('button', { name: 'Sign In' }));
